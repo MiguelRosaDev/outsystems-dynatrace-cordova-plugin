@@ -195,9 +195,9 @@ var Doctor = (function () {
                 if (this.isCapacitorAvailable()) {
                     return true;
                 }
-                var projectBuilderStr = (0, FileHelper_1.getProjectBuilderAsString)();
-                if (projectBuilderStr !== undefined) {
-                    return parseInt(projectBuilderStr.substring(projectBuilderStr.indexOf('distributions/gradle-') + 21, projectBuilderStr.indexOf('-all.zip')), 10) >= DoctorConstants_1.GRADLE_MIN_VERSION;
+                var gradleVersionFileStr = (0, FileHelper_1.getGradleVersionFileAsString)();
+                if (gradleVersionFileStr !== undefined) {
+                    return parseInt(gradleVersionFileStr.substring(gradleVersionFileStr.indexOf('distributions/gradle-') + 21, gradleVersionFileStr.indexOf('-all.zip')), 10) >= DoctorConstants_1.GRADLE_MIN_VERSION;
                 }
             }
         }

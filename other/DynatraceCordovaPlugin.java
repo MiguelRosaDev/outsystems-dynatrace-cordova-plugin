@@ -17,7 +17,6 @@ public class DynatraceCordovaPlugin extends CordovaPlugin {
   public static final String ACTION_UEM_END_SESSION = "endVisit";
   public static final String ACTION_UEM_GET_USERPRIVACYOPTIONS = "getUserPrivacyOptions";
   public static final String ACTION_UEM_APPLY_USERPRIVACYOPTIONS = "applyUserPrivacyOptions";
-  public static final String ACTION_UEM_IDENTIFY_USER = "identifyUser";
 
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -48,12 +47,6 @@ public class DynatraceCordovaPlugin extends CordovaPlugin {
         Dynatrace.applyUserPrivacyOptions(optionsBuilder.build());
         callbackContext.success("Privacy settings updated!");
 
-        return true;
-      } else if (action.equals(ACTION_UEM_IDENTIFY_USER)) {
-        String userId = args.getJSONObject(0).getString("userId");
-      
-        Dynatrace.identifyUser(userId);
-        callbackContext.success("UserId: " + userId);
         return true;
       }
     } catch(Exception e) {

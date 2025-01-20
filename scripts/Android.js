@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeGradleConfig = exports.instrumentAndroidPlatform = exports.getGradleApplyBuildScript = exports.getGradleApplyDynatraceScript = void 0;
 var path_1 = require("path");
+var fs_1 = require("fs");
 var FileHelper_1 = require("./helpers/FileHelper");
 var Logger_1 = require("./logger/Logger");
 var PathHelper_1 = require("./helpers/PathHelper");
 var GRADLE_CONFIG_IDENTIFIER = '// AUTO - INSERTED';
 var GRADLE_BUILDSCRIPT_IDENTIFIER = 'buildscript';
+var OLD_DYNATRACE_PLUGIN = 'dynatrace-cordova-plugin';
 var getGradleApplyDynatraceScript = function () { return "apply from: \"".concat((0, PathHelper_1.getDynatraceGradleFile)().split(path_1.sep).join("".concat(path_1.sep + path_1.sep)), "\""); };
 exports.getGradleApplyDynatraceScript = getGradleApplyDynatraceScript;
 var getGradleApplyBuildScript = function () {
@@ -14,11 +16,15 @@ var getGradleApplyBuildScript = function () {
 };
 exports.getGradleApplyBuildScript = getGradleApplyBuildScript;
 var instrumentAndroidPlatform = function (pathToGradle, remove) {
-    var path = (0, FileHelper_1.checkIfFileExistsSync)(pathToGradle);
-    if (!path.endsWith('.gradle')) {
+    if ((0, fs_1.existsSync)(pathToGradle)) {
+        if (!pathToGradle.endsWith('.gradle')) {
+            throw new Error("Can't find .gradle file. gradle path must also include the gradle file!");
+        }
+        changeCordovaBuildGradleFile(pathToGradle, remove);
+    }
+    else {
         throw new Error("Can't find .gradle file. gradle path must also include the gradle file!");
     }
-    changeCordovaBuildGradleFile(path, remove);
 };
 exports.instrumentAndroidPlatform = instrumentAndroidPlatform;
 var changeCordovaBuildGradleFile = function (pathToGradle, remove) {
@@ -49,7 +55,12 @@ var changeCordovaBuildGradleFile = function (pathToGradle, remove) {
         }
     }
     else {
-        if (gradlePluginFileIndex === -1) {
+        var oldPluginValue = gradleFileContentLines[gradlePluginFileIndex];
+        var oldDynatraceValue = gradleFileContentLines[gradleDynatraceFileIndex];
+        if (gradlePluginFileIndex === -1 || (oldPluginValue !== undefined && oldPluginValue.includes(OLD_DYNATRACE_PLUGIN))) {
+            if (oldPluginValue !== undefined && oldPluginValue.includes(OLD_DYNATRACE_PLUGIN)) {
+                gradleFileContentLines.splice(gradlePluginFileIndex, 1);
+            }
             var gradleFileCordovaIndex = -1;
             for (var i = 0; i < gradleFileContentLines.length; i++) {
                 if (gradleFileContentLines[i].startsWith(GRADLE_BUILDSCRIPT_IDENTIFIER)) {
@@ -63,7 +74,10 @@ var changeCordovaBuildGradleFile = function (pathToGradle, remove) {
             gradleFileContentLines.splice(gradleFileCordovaIndex + 1, 0, (0, exports.getGradleApplyBuildScript)());
             modified = true;
         }
-        if (gradleDynatraceFileIndex === -1) {
+        if (gradleDynatraceFileIndex === -1 || (oldDynatraceValue !== undefined && oldDynatraceValue.includes(OLD_DYNATRACE_PLUGIN))) {
+            if (oldDynatraceValue !== undefined && oldDynatraceValue.includes(OLD_DYNATRACE_PLUGIN)) {
+                gradleFileContentLines.splice(gradleDynatraceFileIndex, 1);
+            }
             gradleFileContentLines.splice(gradleFileContentLines.length, 0, (0, exports.getGradleApplyDynatraceScript)());
             modified = true;
         }

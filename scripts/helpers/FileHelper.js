@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProjectBuilderAsString = exports.getDynatraceConfigAsObject = exports.getPlistAsPath = exports.isGradleAvailable = exports.isPlatformAvailable = exports.copyFileSync = exports.copyFile = exports.renameFileSync = exports.renameFile = exports.deleteFileSync = exports.deleteFile = exports.deleteDirectory = exports.createDirectorySync = exports.createDirectory = exports.writeTextToFileSync = exports.writeTextToFile = exports.readTextFromFile = exports.readTextFromFileSync = exports.checkIfFileExistsSync = exports.checkIfFileExists = exports.appendFileSync = exports.searchFileExtInDirectoryNonRecursive = exports.searchFileExtInDirectoryRecursive = exports.searchFilesInDirectoryRecursive = void 0;
+exports.getGradleVersionFileAsString = exports.getDynatraceConfigAsObject = exports.getPlistAsPath = exports.isGradleAvailable = exports.isPlatformAvailable = exports.copyFileSync = exports.copyFile = exports.renameFileSync = exports.renameFile = exports.deleteFileSync = exports.deleteFile = exports.deleteDirectory = exports.createDirectorySync = exports.createDirectory = exports.writeTextToFileSync = exports.writeTextToFile = exports.readTextFromFile = exports.readTextFromFileSync = exports.appendFileSync = exports.searchFileExtInDirectoryNonRecursive = exports.searchFileExtInDirectoryRecursive = exports.searchFilesInDirectoryRecursive = void 0;
 var fs_1 = require("fs");
 var path_1 = require("path");
 var Logger_1 = require("../logger/Logger");
@@ -138,24 +138,6 @@ var appendFileSync = function (file, text) {
     (0, fs_1.appendFileSync)(file, text);
 };
 exports.appendFileSync = appendFileSync;
-var checkIfFileExists = function (_file) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2, new Promise(function (resolve, reject) {
-                (0, fs_1.stat)(_file, function (err) {
-                    if (err) {
-                        reject("".concat(err, " - File doesn't exist: ").concat((0, path_1.resolve)(_file)));
-                    }
-                    resolve(_file);
-                });
-            })];
-    });
-}); };
-exports.checkIfFileExists = checkIfFileExists;
-var checkIfFileExistsSync = function (_file) {
-    (0, fs_1.statSync)(_file);
-    return _file;
-};
-exports.checkIfFileExistsSync = checkIfFileExistsSync;
 var readTextFromFileSync = function (_file) { return (0, fs_1.readFileSync)(_file, 'utf8'); };
 exports.readTextFromFileSync = readTextFromFileSync;
 var readTextFromFile = function (_file) { return __awaiter(void 0, void 0, void 0, function () {
@@ -327,14 +309,11 @@ var copyFileSync = function (filePath, destPath) {
 };
 exports.copyFileSync = copyFileSync;
 var isPlatformAvailable = function (path, platform) {
-    try {
-        (0, exports.checkIfFileExistsSync)(path);
-        return true;
-    }
-    catch (e) {
+    if (path == null || !(0, fs_1.existsSync)(path)) {
         Logger_1.Logger.getInstance().logWarning("".concat(platform, " Location doesn't exist - Skip ").concat(platform, " instrumentation and configuration."));
         return false;
     }
+    return true;
 };
 exports.isPlatformAvailable = isPlatformAvailable;
 var isGradleAvailable = function (isCap) { return isCap !== undefined && isCap
@@ -363,22 +342,23 @@ var getPlistAsPath = function (isCap) { return __awaiter(void 0, void 0, void 0,
 }); };
 exports.getPlistAsPath = getPlistAsPath;
 var getDynatraceConfigAsObject = function () {
-    try {
-        (0, exports.checkIfFileExistsSync)((0, PathHelper_1.getConfigFilePath)());
+    if ((0, fs_1.existsSync)((0, PathHelper_1.getConfigFilePath)())) {
         return require((0, PathHelper_1.getConfigFilePath)());
     }
-    catch (e) {
+    else {
         return undefined;
     }
 };
 exports.getDynatraceConfigAsObject = getDynatraceConfigAsObject;
-var getProjectBuilderAsString = function () {
-    try {
-        (0, exports.checkIfFileExistsSync)((0, PathHelper_1.getAndroidGradleVersion)());
+var getGradleVersionFileAsString = function () {
+    if ((0, fs_1.existsSync)((0, PathHelper_1.getAndroidGradleVersion)())) {
         return (0, exports.readTextFromFileSync)((0, PathHelper_1.getAndroidGradleVersion)());
     }
-    catch (e) {
+    else if ((0, fs_1.existsSync)((0, PathHelper_1.getAndroidGradleVersionNewer)())) {
+        return (0, exports.readTextFromFileSync)((0, PathHelper_1.getAndroidGradleVersionNewer)());
+    }
+    else {
         return undefined;
     }
 };
-exports.getProjectBuilderAsString = getProjectBuilderAsString;
+exports.getGradleVersionFileAsString = getGradleVersionFileAsString;

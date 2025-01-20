@@ -1,5 +1,5 @@
 // Dynatrace.h
-// Version: 8.259.1.1009
+// Version: 8.305.3.1016
 //
 // These materials contain confidential information and
 // trade secrets of Dynatrace Corporation. You shall
@@ -79,6 +79,23 @@ typedef NS_ENUM(int, DTX_StatusCode) {
     DTX_CrashReportInvalid = -10,
     DTX_TruncatedUserId = -11,
 };
+
+/*!
+ @class DTXModifyableEvent
+ @abstract This class represents an event available for modification.
+ @discussion It can be used to modify an event scheduled to be sent.
+ */
+@interface DTXModifyableEvent : NSObject
+@property (nonatomic, readwrite) NSMutableDictionary<NSString*,id> * _Nonnull attributes;
+@end
+
+/*!
+ @class DTXModifyEventSubscriber
+ @abstract This class acts as a reference to a modify event closure.
+ @discussion It can be used to store a reference to an event modifier and remove the modifier in removeEventModifier.
+ */
+@interface DTXModifyEventSubscriber : NSObject
+@end
 
 /*!
  @category UIControl (DynatraceCustomization)
@@ -412,6 +429,25 @@ typedef NS_ENUM(int, DTX_StatusCode) {
  */
 - (DTX_StatusCode)stopWebRequestTiming:(NSString* _Nullable)statusCode;
 
+/*!
+ @brief Manually finish timing a web request.
+
+ @param statusCode the response status code for a successful web request or the error code or error description
+ for a failed web request
+ 
+ @param bytesSent number of bytes sent by this web request
+ 
+ @param bytesReceived number of bytes recieved by this web request
+ 
+ The Dynatrace OneAgent automatically times web requests made using NSURLRequest, NSURLConnection,
+ NSURLProtocol and NSString. If you use an alternate technology to make
+ web requests and want to time them, use the getRequestTagHeader method, adding that information to
+ your request, and then this method to stop the timing and send the information to the mobile action PurePath.
+
+ @return Returns a DTX_StatusCode
+ */
+-(DTX_StatusCode)stopWebRequestTiming:(NSString* _Nullable)statusCode bytesSent:(int64_t)bytesSent bytesReceived:(int64_t)bytesReceived;
+
 @end
 
 /*************************************************************************************************/
@@ -420,6 +456,8 @@ typedef NS_ENUM(int, DTX_StatusCode) {
 /*!
 @brief DTXUserPrivacyOptions protocol should be implemented by objects passed to applyUserPrivacyOptions:completion: method.
 @property crashReportingOptedIn current privacy setting for crash reporting
+@property crashReplayOptedIn current privacy setting for crash Session Replay
+@property screenRecordOptedIn current privacy setting for Session Replay
 @property dataCollectionLevel the current data collection level.
 */
 
@@ -427,6 +465,7 @@ typedef NS_ENUM(int, DTX_StatusCode) {
 @required
 @property (nonatomic) BOOL crashReportingOptedIn;
 @property (nonatomic) BOOL crashReplayOptedIn;
+@property (nonatomic) NSNumber* _Nullable screenRecordOptedIn;
 @property (nonatomic) DTX_DataCollectionLevel dataCollectionLevel;
 @end
 
@@ -523,7 +562,7 @@ typedef NS_ENUM(int, DTX_SwiftUIViewType) {
 
  @return Returns a DTX_StatusCode
  */
-+ (DTX_StatusCode)shutdown;
++ (DTX_StatusCode)shutdown __deprecated_msg("Deprecated as of version 8.303, no replacement");
 
 /*!
  @brief Identify a user.
@@ -752,7 +791,14 @@ When the user optin feature is not used:
 
  @param mappingJson generated and passed automatically by the Dynatrace SwiftUI intrumentor.
 */
-+ (void)setLineNumberMapping:(NSString* _Nonnull)mappingJson;
++ (void)setLineNumberMapping:(NSString* _Nonnull)mappingJson __deprecated;
+
+/*!
+ @brief Set SwiftUI instrumentor config data. This method is called automatically by the SwiftUI instrumentor.
+
+ @param dict generated and passed automatically by the Dynatrace SwiftUI intrumentor.
+*/
++ (void)handoverInstrumentorConfig:(NSDictionary* _Nonnull)dict;
 
 /*!
  @brief Send a business event.
@@ -766,6 +812,65 @@ When the user optin feature is not used:
  @param attributes dictionary of attributes being attached to the sent event
 */
 + (void)sendBizEventWithType:(NSString* _Nonnull)type attributes:(NSDictionary<NSString*,id>* _Nullable)attributes;
+
+/*!
+ @brief Open a sheet that allows sharing the agent's the logs via an UIActivityViewController.
+
+ Only works when `DTXWriteLogsToFile` is set to `true` (defaults to `false`). If you want logs to be written to disk set `DTXWriteLogsToFile` set to `true`.
+
+ @param viewController the viewController the sharing sheet is shown on
+*/
++ (void)shareLogsFileOnViewController:(UIViewController* _Nonnull)viewController;
+
+/*!
+ * @brief Sends an event with the fields specified. A context can be added to provide information for later modification.
+ *
+ * Note: This feature is currently only supported for Real User Monitoring powered by Grail on Dynatrace SaaS deployments.
+ *
+ * @param fields fields of the event being sent
+ * @param eventContext context of the event being sent provided for potential later modification
+ */
++ (void)sendEventWithFields:(NSDictionary<NSString*,id>* _Nullable)fields eventContext:(id _Nullable)eventContext NS_SWIFT_NAME(sendEvent(fields:eventContext:));
+
+/*!
+ * @brief A view refers to a view/screen/window which a user is presented with at any one time. On every opening of a view
+ * the startView method can be called to highlight the current view context of the user. All events happening
+ * thereafter will be analysable in context of that view. This method also clears the previous view context, if
+ * set.
+ *
+ * Note: This feature is currently only supported for Real User Monitoring powered by Grail on Dynatrace SaaS deployments.
+ *
+ * @param name of view
+ */
++ (void)startViewWithName:(NSString* _Nonnull)name NS_SWIFT_NAME(startView(name:));
+
+/*!
+ * @brief Method clears the previous view context, if set.
+ *
+ * Note: This feature is currently only supported for Real User Monitoring powered by Grail on Dynatrace SaaS deployments.
+ *
+ * See startViewWithName(NSString*)name
+ */
++ (void)stopView;
+
+/*!
+ * @brief Adds a modifier that enriches future events by applying the modifier function to them.
+ *
+ * Note: This feature is currently only supported for Real User Monitoring powered by Grail on Dynatrace SaaS deployments.
+ *
+ * @param eventModifier the modification function that is applied to each event
+ * @return An event subscriber that can be used to remove the subscription
+ */
++ (DTXModifyEventSubscriber* _Nonnull)addEventModifier:(DTXModifyableEvent* _Nullable (^ _Nonnull)(DTXModifyableEvent* _Nonnull event, id _Nullable eventContext))eventModifier;
+
+/*!
+ * @brief Removes a previously added event modifier.
+ *
+ * Note: This feature is currently only supported for Real User Monitoring powered by Grail on Dynatrace SaaS deployments.
+ *
+ * @param subscriber the previously added subscriber
+ */
++ (void)removeEventModifier:(DTXModifyEventSubscriber* _Nonnull)subscriber;
 
 @end
 #endif
@@ -870,7 +975,7 @@ extern NSString *_Nonnull const kDTXUserOptIn;
  @const kDTXInstrumentGPSLocation
  The location is captured only if the app uses CLLocationManager and sends the captured location as a metric to Dynatrace.
  OneAgent for iOS doesn't perform GPS location capturing on its own. Set the value to false to disable OneAgent
- for iOS location capturing. The default value is true.
+ for iOS location capturing. The default value is false.
  */
 extern NSString *_Nonnull const kDTXInstrumentGPSLocation;
 
@@ -1001,3 +1106,24 @@ extern NSString *_Nonnull const kDTXInstrumentFrameworks;
  If set to true, a label or accessibility identifier of a view will be replaced by the view class name when reporting a touch event.
 */
 extern NSString *_Nonnull const kDTXUIActionNamePrivacy;
+/*!
+@const kDTXFilterSwiftUIActionDuplicates
+ If set to true, actions generated for SwiftUI components will be ignored in favor of generated SwiftUI actions.
+ The default is true for SwiftUI lifecycle apps and false for UIKit/Storyboard lifecycle apps.
+*/
+extern NSString *_Nonnull const kDTXFilterSwiftUIActionDuplicates;
+/*!
+@const kDTXSwiftMappingJson
+ Generated and passed automatically by the Dynatrace SwiftUI intrumentor.
+*/
+extern NSString *_Nonnull const kDTXSwiftMappingJson;
+/*!
+@const kDTXSwiftIsSwiftUIApp
+ Generated and passed automatically by the Dynatrace SwiftUI intrumentor.
+*/
+extern NSString *_Nonnull const kDTXSwiftIsSwiftUIApp;
+/*!
+@const kDTXInstrumentAsyncWebRequests
+ Enables auto-instrumentation of the async URLSession calls. The default value is true.
+*/
+extern NSString *_Nonnull const kDTXInstrumentAsyncWebRequests;

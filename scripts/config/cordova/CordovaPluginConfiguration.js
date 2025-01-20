@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CordovaPluginConfiguration = void 0;
 var CordovaPluginConfiguration = (function () {
-    function CordovaPluginConfiguration(debugEnabled, cookieProxy, cspUrl, jsAgentPath, gradlePath, plistPath) {
+    function CordovaPluginConfiguration(debugEnabled, cookieProxy, capacitorCookieProxy, cspUrl, jsAgentPath, gradlePath, plistPath) {
         this.debugEnabled = debugEnabled;
         this.cookieProxy = cookieProxy;
+        this.capacitorCookieProxy = capacitorCookieProxy;
         this.cspUrl = cspUrl;
         this.jsAgentPath = jsAgentPath;
         this.gradlePath = gradlePath;
@@ -21,6 +22,9 @@ var CordovaPluginConfiguration = (function () {
     };
     CordovaPluginConfiguration.prototype.isCookieProxyEnabled = function () {
         return this.cookieProxy;
+    };
+    CordovaPluginConfiguration.prototype.isCapacitorCookieProxyEnabled = function () {
+        return this.capacitorCookieProxy;
     };
     CordovaPluginConfiguration.prototype.isJsAgentPathAvailable = function () {
         return this.jsAgentPath !== undefined;

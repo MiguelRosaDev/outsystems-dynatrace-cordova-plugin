@@ -5,7 +5,7 @@ module.exports = {
 
     js: {
         url: "",
-        mode: 2
+        mode: 4
     },
 
     android: {

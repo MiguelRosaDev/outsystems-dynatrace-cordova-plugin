@@ -41,18 +41,19 @@ var path_1 = require("path");
 var Logger_1 = require("../logger/Logger");
 var HtmlConstants_1 = require("./HtmlConstants");
 var HtmlUtil_1 = require("./HtmlUtil");
+var InstrumentUtil_1 = require("../utils/InstrumentUtil");
 var HTMLModifier = (function () {
     function HTMLModifier(htmlFile) {
         this.htmlFile = htmlFile;
         this.swallowAPIEnabled = HtmlConstants_1.DEFAULT_SWALLOW_API_INJECTION;
-        this.cookieProxyScript = HtmlConstants_1.DEFAULT_COOKIE_PROXY_INJECTION;
+        this.cookieProxySource = undefined;
     }
     HTMLModifier.prototype.setJSAgentContent = function (jsAgentContent) {
         this.jsAgentContent = jsAgentContent;
         return this;
     };
-    HTMLModifier.prototype.setCookieProxyEnabled = function (cookieProxy) {
-        this.cookieProxyScript = cookieProxy;
+    HTMLModifier.prototype.setCookieProxySource = function (cookieProxySource) {
+        this.cookieProxySource = cookieProxySource;
         return this;
     };
     HTMLModifier.prototype.setSwallowAPIEnabled = function (swallowAPI) {
@@ -70,9 +71,27 @@ var HTMLModifier = (function () {
         }
         return false;
     };
+    HTMLModifier.prototype.isCookieProxyInHtml = function () {
+        return this.elementExistsInHtml([HtmlConstants_1.COOKIE_PROXY_SRC, HtmlConstants_1.CAPACITOR_COOKIE_PROXY_SRC]);
+    };
+    HTMLModifier.prototype.isSwallowApiInHtml = function () {
+        return this.elementExistsInHtml([HtmlConstants_1.SWALLOW_API_SRC]);
+    };
+    HTMLModifier.prototype.elementExistsInHtml = function (elements) {
+        var scripts = this.htmlFile.getDOM().window.document.getElementsByTagName('script');
+        for (var i = 0; i < scripts.length; i++) {
+            var item = scripts.item(i);
+            for (var i_1 = 0; i_1 < elements.length; i_1++) {
+                if (item !== null && item.src.includes(elements[i_1]) && item.parentNode !== null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
     HTMLModifier.prototype.modify = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var head, scriptTag;
+            var head, scriptTag, cookieProxyProps;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -82,7 +101,12 @@ var HTMLModifier = (function () {
                         head = this.getHead();
                         if (!(this.jsAgentContent !== undefined && head != null)) return [3, 6];
                         if (!this.swallowAPIEnabled) return [3, 2];
-                        head.prepend(this.createScriptTag(HtmlConstants_1.SWALLOW_API_SRC));
+                        if (!this.isSwallowApiInHtml()) {
+                            head.prepend(this.createScriptTag(HtmlConstants_1.SWALLOW_API_SRC));
+                        }
+                        else {
+                            Logger_1.Logger.getInstance().logWarning('Not adding swallow api to HTML file since it already exists!');
+                        }
                         return [4, (0, HtmlUtil_1.copySwallowAPI)((0, path_1.join)(this.htmlFile.getPath(), '..'))];
                     case 1:
                         _a.sent();
@@ -93,9 +117,15 @@ var HTMLModifier = (function () {
                         if (scriptTag.content.firstChild !== null) {
                             head.prepend(scriptTag.content.firstChild);
                         }
-                        if (!(this.cookieProxyScript === true)) return [3, 4];
-                        head.prepend(this.createScriptTag(HtmlConstants_1.COOKIE_PROXY_SRC));
-                        return [4, (0, HtmlUtil_1.copyCookieProxy)((0, path_1.join)(this.htmlFile.getPath(), '..'))];
+                        if (!(this.cookieProxySource !== undefined)) return [3, 4];
+                        cookieProxyProps = (0, InstrumentUtil_1.getCookieProxyProps)(this.cookieProxySource);
+                        if (!this.isCookieProxyInHtml()) {
+                            head.prepend(this.createScriptTag(this.cookieProxySource));
+                        }
+                        else {
+                            Logger_1.Logger.getInstance().logWarning("Not adding ".concat(cookieProxyProps.name, " to HTML file since it already exists!"));
+                        }
+                        return [4, (0, HtmlUtil_1.copyCookieProxy)((0, path_1.join)(this.htmlFile.getPath(), '..'), cookieProxyProps)];
                     case 3:
                         _a.sent();
                         _a.label = 4;

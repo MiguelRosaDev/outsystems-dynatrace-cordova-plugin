@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConfigurationReader = void 0;
 var DownloadAgent_1 = require("../DownloadAgent");
+var PluginUtil_1 = require("../utils/PluginUtil");
 var ConfigurationDefaults_1 = require("./ConfigurationDefaults");
 var CordovaPluginConfigurationBuilder_1 = require("./cordova/CordovaPluginConfigurationBuilder");
 var MobileAgentConfiguration_1 = require("./mobile/MobileAgentConfiguration");
@@ -11,7 +12,6 @@ var ConfigurationReader = (function () {
     function ConfigurationReader() {
     }
     ConfigurationReader.prototype.readConfiguration = function (pathToConfiguration) {
-        debugger;
         var readConfig;
         try {
             readConfig = require(pathToConfiguration);
@@ -37,9 +37,10 @@ var ConfigurationReader = (function () {
             cordovaConfigurationBuilder.setDebugMode(Boolean(rawConfig.cordova.debug));
             cordovaConfigurationBuilder.setCSPUrl(rawConfig.cordova.cspURL);
             cordovaConfigurationBuilder.setCookieProxy(Boolean(rawConfig.cordova.cookieProxy));
-            cordovaConfigurationBuilder.setJsAgentPath(rawConfig.cordova.jsAgentPath);
-            cordovaConfigurationBuilder.setGradlePath(rawConfig.cordova.gradlePath);
-            cordovaConfigurationBuilder.setPlistPath(rawConfig.cordova.plistPath);
+            cordovaConfigurationBuilder.setCapacitorCookieProxy(Boolean(rawConfig.cordova.capacitorCookieProxy));
+            cordovaConfigurationBuilder.setJsAgentPath((0, PluginUtil_1.sanitizePath)(rawConfig.cordova.jsAgentPath));
+            cordovaConfigurationBuilder.setGradlePath((0, PluginUtil_1.sanitizePath)(rawConfig.cordova.gradlePath));
+            cordovaConfigurationBuilder.setPlistPath((0, PluginUtil_1.sanitizePath)(rawConfig.cordova.plistPath));
         }
         return cordovaConfigurationBuilder.build();
     };
@@ -64,6 +65,9 @@ var ConfigurationReader = (function () {
             var javascriptConfigurationBuilder = new JavaScriptAgentConfigurationBuilder_1.JavaScriptAgentConfigurationBuilder(rawConfig.js.url);
             javascriptConfigurationBuilder.setAgentMode(rawConfig.js.mode);
             javascriptConfigurationBuilder.setAnyCertificateAllowed(Boolean(rawConfig.js.allowanycert));
+            if (rawConfig.js.htmlFiles !== undefined) {
+                javascriptConfigurationBuilder.setHtmlFiles(rawConfig.js.htmlFiles);
+            }
             return javascriptConfigurationBuilder.build();
         }
         return undefined;

@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HTMLReader = void 0;
+var fs_1 = require("fs");
 var jsdom_1 = require("jsdom");
 var FileHelper_1 = require("../helpers/FileHelper");
 var HtmlFile_1 = require("./HtmlFile");
@@ -46,25 +46,17 @@ var HTMLReader = (function () {
     }
     HTMLReader.prototype.isAvailable = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var error_1;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.htmlFile === undefined || !String(this.htmlFile).endsWith('.html')) {
-                            return [2, false];
-                        }
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, (0, FileHelper_1.checkIfFileExists)(this.htmlFile)];
-                    case 2:
-                        _a.sent();
-                        return [2, true];
-                    case 3:
-                        error_1 = _a.sent();
-                        return [2, false];
-                    case 4: return [2];
+                if (this.htmlFile === undefined || !String(this.htmlFile).endsWith('.html')) {
+                    return [2, false];
                 }
+                try {
+                    return [2, (0, fs_1.existsSync)(this.htmlFile)];
+                }
+                catch (error) {
+                    return [2, false];
+                }
+                return [2];
             });
         });
     };
@@ -79,12 +71,12 @@ var HTMLReader = (function () {
                         return [4, (0, FileHelper_1.readTextFromFile)(this.htmlFile)];
                     case 2:
                         data = _a.sent();
-                        return [2, new HtmlFile_1.HTMLFile(this.htmlFile, new jsdom_1.JSDOM(data))];
-                    case 3: return [2, new HtmlFile_1.HTMLFile(this.htmlFile, new jsdom_1.JSDOM(''))];
+                        return [2, new HtmlFile_1.HTMLFile(this.htmlFile, new jsdom_1.JSDOM(data), data)];
+                    case 3: return [2, new HtmlFile_1.HTMLFile(this.htmlFile, new jsdom_1.JSDOM(''), "")];
                 }
             });
         });
     };
     return HTMLReader;
 }());
-exports.HTMLReader = HTMLReader;
+exports.default = HTMLReader;

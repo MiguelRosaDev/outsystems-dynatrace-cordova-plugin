@@ -4,12 +4,12 @@ exports.NativeNetworkInterceptorUtils = void 0;
 var sessionStoragePrefix = '_dt.';
 var getDTC = function (actionId) {
     var referer = getReferer(actionId);
-    var dtAdk = getCookieValue('dtAdk');
+    var dtAdk = getCookieValue('dtAdk', false);
     if (dtAdk === '') {
         dtAdk = getLocalStorageValue('dtAdk');
     }
-    return "sn=\"".concat(getCookieValue('dtCookie'), "\", pc=\"").concat(getCookieValue('dtPC'), "\"")
-        + ", v=\"".concat(getCookieValue('rxVisitor'), "\", r=\"").concat(referer, "\", adk=\"").concat(dtAdk, "\"");
+    return "sn=\"".concat(getSessionNumber(getCookieValue('dtCookie', true)), "\", pc=\"").concat(patchPageContext(getCookieValue('dtPC', true), actionId), "\"")
+        + ", v=\"".concat(getCookieValue('rxVisitor', true), "\", r=\"").concat(referer, "\", app=\"").concat(getApplicationId(), "\", adk=\"").concat(dtAdk, "\"");
 };
 var getReferer = function (actionId) {
     var referer = '';
@@ -21,13 +21,45 @@ var getReferer = function (actionId) {
     }
     return referer;
 };
-var getCookieValue = function (cookieName) {
+var patchPageContext = function (pcCookie, actionId) {
+    if (pcCookie != null && pcCookie.length > 0) {
+        var groups = pcCookie.match(/(.+)[h](.+)[v](.+)/);
+        if (groups != null && groups.length === 4) {
+            return "".concat(groups[1], "h").concat(actionId, "v").concat(groups[3]);
+        }
+        else {
+            console.log('Regex for page context cookie failed - Returning default values!');
+        }
+    }
+    return pcCookie;
+};
+var getApplicationId = function () { return typeof dT_ !== 'undefined' && typeof dT_.scv !== 'undefined' ? dT_.scv('app') : ''; };
+var getSessionNumber = function (dtCookie) {
+    if (dtCookie !== undefined) {
+        var groups = dtCookie.match(/v_(.+)_srv_(.+)_sn_(.+?)[_](.+)/);
+        if (groups != null && groups.length === 5) {
+            return "v_".concat(groups[1], "_srv_").concat(groups[2], "_sn_").concat(groups[3]);
+        }
+        else {
+            console.log('Regex for session number failed - Returning default values!');
+        }
+    }
+    return 'v_4_srv__sn_';
+};
+var getCookieValue = function (cookieName, postfix) {
+    if (postfix && isCookiePostfixEnabled()) {
+        cookieName = cookieName + dT_.cfg('postfix');
+    }
     var b = document.cookie.match('(^|[^;]+)\\s*' + cookieName + '\\s*=\\s*([^;]+)');
     var cookie = b ? b.pop() : '';
     if (cookie === undefined || cookie.length === 0) {
         return getSessionStorageValue(cookieName);
     }
     return cookie;
+};
+var isCookiePostfixEnabled = function () {
+    return typeof dT_ !== 'undefined' && dT_.initialized === true && typeof dT_.cfg !== 'undefined'
+        && typeof dT_.cfg('postfix') !== 'undefined';
 };
 var getLocalStorageValue = function (key) {
     if (typeof localStorage !== 'undefined') {

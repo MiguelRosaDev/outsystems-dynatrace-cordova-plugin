@@ -8,6 +8,7 @@ var JavaScriptAgentConfigurationBuilder = (function () {
     function JavaScriptAgentConfigurationBuilder(agentUrl) {
         this.agentMode = JavaScriptAgentMode_1.DEFAULT_JAVASCRIPT_AGENT_MODE;
         this.anyCertificateAllowed = JavaScriptAgentConfigurationConstants_1.DEFAULT_IS_ANY_CERTIFICATE_ALLOWED;
+        this.htmlFiles = [];
         this.agentUrl = this.patchIncorrectJSUrl(agentUrl);
     }
     JavaScriptAgentConfigurationBuilder.prototype.setAgentMode = function (agentMode) {
@@ -20,8 +21,12 @@ var JavaScriptAgentConfigurationBuilder = (function () {
         this.anyCertificateAllowed = anyCertificateAllowed;
         return this;
     };
+    JavaScriptAgentConfigurationBuilder.prototype.setHtmlFiles = function (htmlFiles) {
+        this.htmlFiles = htmlFiles;
+        return this;
+    };
     JavaScriptAgentConfigurationBuilder.prototype.build = function () {
-        return new JavaScriptAgentConfiguration_1.JavaScriptAgentConfiguration(this.agentUrl, this.agentMode, this.anyCertificateAllowed);
+        return new JavaScriptAgentConfiguration_1.JavaScriptAgentConfiguration(this.agentUrl, this.agentMode, this.anyCertificateAllowed, this.htmlFiles);
     };
     JavaScriptAgentConfigurationBuilder.prototype.patchIncorrectJSUrl = function (url) {
         return url.replace('ApiToken=', 'Api-Token=');

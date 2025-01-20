@@ -7,6 +7,7 @@ var CordovaPluginConfigurationBuilder = (function () {
     function CordovaPluginConfigurationBuilder() {
         this.debug = CordovaPluginConfigurationConstants_1.DEFAULT_DEBUG_MODE;
         this.cookieProxy = CordovaPluginConfigurationConstants_1.DEFAULT_COOKIE_PROXY;
+        this.capacitorCookieProxy = CordovaPluginConfigurationConstants_1.DEFAULT_CAPACITOR_COOKIE_PROXY;
     }
     CordovaPluginConfigurationBuilder.prototype.setDebugMode = function (debug) {
         this.debug = debug;
@@ -18,6 +19,10 @@ var CordovaPluginConfigurationBuilder = (function () {
     };
     CordovaPluginConfigurationBuilder.prototype.setCookieProxy = function (cookieProxy) {
         this.cookieProxy = cookieProxy;
+        return this;
+    };
+    CordovaPluginConfigurationBuilder.prototype.setCapacitorCookieProxy = function (capacitorCookieProxy) {
+        this.capacitorCookieProxy = capacitorCookieProxy;
         return this;
     };
     CordovaPluginConfigurationBuilder.prototype.setJsAgentPath = function (jsAgentPath) {
@@ -33,7 +38,7 @@ var CordovaPluginConfigurationBuilder = (function () {
         return this;
     };
     CordovaPluginConfigurationBuilder.prototype.build = function () {
-        return new CordovaPluginConfiguration_1.CordovaPluginConfiguration(this.debug, this.cookieProxy, this.cspUrl, this.jsAgentPath, this.gradlePath, this.plistPath);
+        return new CordovaPluginConfiguration_1.CordovaPluginConfiguration(this.debug, this.cookieProxy, this.capacitorCookieProxy, this.cspUrl, this.jsAgentPath, this.gradlePath, this.plistPath);
     };
     return CordovaPluginConfigurationBuilder;
 }());

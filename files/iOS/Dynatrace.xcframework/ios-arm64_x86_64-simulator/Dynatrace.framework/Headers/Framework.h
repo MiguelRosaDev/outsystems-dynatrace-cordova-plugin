@@ -15,4 +15,5 @@ FOUNDATION_EXPORT double Dynatrace_FrameworkVersionNumber;
 FOUNDATION_EXPORT const unsigned char Dynatrace_FrameworkVersionString[];
 
 // In this header, you should import all the public headers of your framework
-#import <Dynatrace/Dynatrace.h>
+#import "Dynatrace.h"
+#import "DynatraceSwiftUI.h"

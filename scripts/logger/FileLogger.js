@@ -17,6 +17,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileLogger = void 0;
 var path_1 = require("path");
+var fs_1 = require("fs");
 var FileHelper_1 = require("../helpers/FileHelper");
 var PathHelper_1 = require("../helpers/PathHelper");
 var BaseLogger_1 = require("./BaseLogger");
@@ -56,20 +57,17 @@ var FileLogger = (function (_super) {
         return (0, PathHelper_1.getCurrentLogPath)();
     };
     FileLogger.prototype.closeLogger = function () {
+        var logFileName = (0, LogUtil_1.currentDate)().split(':').join('-') + '.txt';
         try {
-            (0, FileHelper_1.checkIfFileExistsSync)((0, PathHelper_1.getCurrentLogPath)());
-            var logFileName = (0, LogUtil_1.currentDate)().split(':').join('-') + '.txt';
-            (0, FileHelper_1.checkIfFileExistsSync)((0, path_1.join)((0, PathHelper_1.getLogPath)(), logFileName));
-            (0, FileHelper_1.renameFileSync)((0, PathHelper_1.getCurrentLogPath)(), (0, path_1.join)((0, PathHelper_1.getLogPath)(), logFileName));
+            if ((0, fs_1.existsSync)((0, PathHelper_1.getCurrentLogPath)()) && !(0, fs_1.existsSync)((0, path_1.join)((0, PathHelper_1.getLogPath)(), logFileName))) {
+                (0, FileHelper_1.renameFileSync)((0, PathHelper_1.getCurrentLogPath)(), (0, path_1.join)((0, PathHelper_1.getLogPath)(), logFileName));
+            }
         }
-        catch (e) {
+        catch (error) {
         }
     };
     FileLogger.prototype.createLogPath = function () {
-        try {
-            (0, FileHelper_1.checkIfFileExistsSync)((0, PathHelper_1.getLogPath)());
-        }
-        catch (error) {
+        if (!(0, fs_1.existsSync)((0, PathHelper_1.getLogPath)())) {
             (0, FileHelper_1.createDirectorySync)((0, PathHelper_1.getLogPath)());
         }
     };

@@ -36,25 +36,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parsedCapPackageJson = exports.parsedPluginPackageJson = exports.parsedApplicationPackageJson = exports.removeScriptHookAndDeps = exports.addScriptHook = exports.isCapVersionThreeOneOrHigher = exports.modifyConfigXmlUninstall = exports.modifyConfigXmlInstall = exports.removePListModification = exports.removeGradleModification = exports.modifyPackageJson = exports.modifyPackageJsonCap = exports.CAP_HOOK = exports.IONIC_HOOK = void 0;
+exports.isOptOut = exports.parsedNpmConfig = exports.parsedCapPackageJson = exports.parsedPluginPackageJson = exports.parsedApplicationPackageJson = exports.removeScriptHookAndDeps = exports.addScriptHook = exports.isCapVersionThreeOneOrHigher = exports.removePListModification = exports.removeGradleModification = exports.modifyPackageJsonCap = exports.CAP_HOOK = exports.IONIC_HOOK = void 0;
 var path_1 = require("path");
+var fs_1 = require("fs");
 var Android_1 = require("../Android");
 var Ios_1 = require("../Ios");
 var Logger_1 = require("../logger/Logger");
 var FileHelper_1 = require("./FileHelper");
 var PathHelper_1 = require("./PathHelper");
-var ConfigParser = require('cordova-common').ConfigParser;
+var child_process_1 = require("child_process");
 exports.IONIC_HOOK = 'ionic:capacitor:build:before';
 exports.CAP_HOOK = 'capacitor:sync:after';
-var DOCTOR_SCRIPT = 'doctorDynatrace';
 var DYNATRACE_PLUGIN = '@dynatrace/cordova-plugin';
-var OLD_DYNATRACE_PLUGIN = 'dynatrace-cordova-plugin';
-var modifyPackageJsonCap = function (install, path) { return __awaiter(void 0, void 0, void 0, function () {
-    var packageJsonParsed, _a, capPackageJsonParsed, capHookValue, doctorValue, e_1;
+var NPM_CONFIG_OPT_OUT = 'dynatrace-not-adding-scripts';
+var modifyPackageJsonCap = function (install, isOptOut, path) { return __awaiter(void 0, void 0, void 0, function () {
+    var packageJsonParsed, _a, capPackageJsonParsed, capHookValue, e_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 6, , 7]);
+                _b.trys.push([0, 7, , 8]);
+                if (!(isOptOut !== true)) return [3, 6];
                 if (!(path !== undefined && path)) return [3, 2];
                 return [4, parsedPackageJson(path)];
             case 1:
@@ -71,7 +72,6 @@ var modifyPackageJsonCap = function (install, path) { return __awaiter(void 0, v
                 capPackageJsonParsed = _b.sent();
                 if (install) {
                     capHookValue = 'node ' + (0, path_1.relative)((0, path_1.join)(((0, PathHelper_1.getApplicationPath)())), (0, path_1.join)(__dirname, '..', 'InstrumentCap.js'));
-                    doctorValue = 'node ' + (0, path_1.relative)((0, path_1.join)(((0, PathHelper_1.getApplicationPath)())), (0, path_1.join)(__dirname, '..', 'Doctor.js'));
                     if (packageJsonParsed.scripts === undefined) {
                         packageJsonParsed.scripts = {};
                     }
@@ -84,7 +84,6 @@ var modifyPackageJsonCap = function (install, path) { return __awaiter(void 0, v
                     else {
                         packageJsonParsed = (0, exports.addScriptHook)(packageJsonParsed, exports.IONIC_HOOK, capHookValue);
                     }
-                    packageJsonParsed = (0, exports.addScriptHook)(packageJsonParsed, DOCTOR_SCRIPT, doctorValue);
                 }
                 else {
                     packageJsonParsed = (0, exports.removeScriptHookAndDeps)(packageJsonParsed);
@@ -95,161 +94,82 @@ var modifyPackageJsonCap = function (install, path) { return __awaiter(void 0, v
                 else {
                     (0, FileHelper_1.writeTextToFileSync)((0, PathHelper_1.getApplicationPackage)(), JSON.stringify(packageJsonParsed, null, '\t'));
                 }
-                return [3, 7];
-            case 6:
+                _b.label = 6;
+            case 6: return [3, 8];
+            case 7:
                 e_1 = _b.sent();
-                Logger_1.Logger.getInstance().logWarning('Error in modifyPackageJsonCap => \n' + e_1 + '\nCould not find package.json!');
-                return [3, 7];
-            case 7: return [2];
+                Logger_1.Logger.getInstance().logWarning('Error in modifyPackageJsonCap => \n' + e_1);
+                return [3, 8];
+            case 8: return [2];
         }
     });
 }); };
 exports.modifyPackageJsonCap = modifyPackageJsonCap;
-var modifyPackageJson = function (install) { return __awaiter(void 0, void 0, void 0, function () {
-    var packageJsonParsed, doctorValue, e_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                return [4, (0, exports.parsedApplicationPackageJson)()];
-            case 1:
-                packageJsonParsed = _a.sent();
-                if (install) {
-                    doctorValue = 'node ' + (0, path_1.relative)((0, path_1.join)(((0, PathHelper_1.getApplicationPath)())), (0, path_1.join)(__dirname, '..', 'Doctor.js'));
-                    if (packageJsonParsed.scripts === undefined) {
-                        packageJsonParsed.scripts = {};
-                    }
-                    packageJsonParsed.cordova.plugins[DYNATRACE_PLUGIN] = {};
-                    delete packageJsonParsed.cordova.plugins[DYNATRACE_PLUGIN];
-                    packageJsonParsed = (0, exports.addScriptHook)(packageJsonParsed, DOCTOR_SCRIPT, doctorValue);
-                }
-                else {
-                    if (packageJsonParsed.cordova !== undefined && packageJsonParsed.cordova.plugins !== undefined) {
-                        delete packageJsonParsed.cordova.plugins[DYNATRACE_PLUGIN];
-                        delete packageJsonParsed.cordova.plugins[OLD_DYNATRACE_PLUGIN];
-                    }
-                    packageJsonParsed = (0, exports.removeScriptHookAndDeps)(packageJsonParsed);
-                }
-                return [4, (0, FileHelper_1.writeTextToFile)((0, PathHelper_1.getApplicationPackage)(), JSON.stringify(packageJsonParsed, null, '\t'))];
-            case 2:
-                _a.sent();
-                return [3, 4];
-            case 3:
-                e_2 = _a.sent();
-                Logger_1.Logger.getInstance().logWarning('Could not find package.json!');
-                return [3, 4];
-            case 4: return [2];
-        }
-    });
-}); };
-exports.modifyPackageJson = modifyPackageJson;
 var removeGradleModification = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var path, e_3;
+    var path;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 5, , 6]);
-                path = void 0;
-                if (!(0, PathHelper_1.isCapacitorApp)()) return [3, 2];
-                return [4, (0, FileHelper_1.checkIfFileExists)((0, PathHelper_1.getAndroidGradleFile)((0, PathHelper_1.getAndroidPathCapacitor)()))];
-            case 1:
-                path = _a.sent();
-                return [3, 4];
-            case 2: return [4, (0, FileHelper_1.checkIfFileExists)((0, PathHelper_1.getAndroidGradleFile)((0, PathHelper_1.getAndroidPath)()))];
-            case 3:
-                path = _a.sent();
-                _a.label = 4;
-            case 4:
+        try {
+            path = void 0;
+            if ((0, PathHelper_1.isCapacitorApp)()) {
+                path = (0, PathHelper_1.getAndroidGradleFile)((0, PathHelper_1.getAndroidPathCapacitor)());
+            }
+            else {
+                path = (0, PathHelper_1.getAndroidGradleFile)((0, PathHelper_1.getAndroidPath)());
+            }
+            if ((0, fs_1.existsSync)(path)) {
                 try {
                     (0, Android_1.instrumentAndroidPlatform)(path, true);
                 }
                 catch (e) {
                     Logger_1.Logger.getInstance().logError("Removal of Gradle modification didn't work!");
                 }
-                return [3, 6];
-            case 5:
-                e_3 = _a.sent();
-                return [3, 6];
-            case 6: return [2];
+            }
         }
+        catch (e) {
+        }
+        return [2];
     });
 }); };
 exports.removeGradleModification = removeGradleModification;
 var removePListModification = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var isCapacitor, e_4, e_5;
+    var isCapacitor, e_2, e_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 11, , 12]);
+                _a.trys.push([0, 8, , 9]);
                 isCapacitor = (0, PathHelper_1.isCapacitorApp)();
-                if (!isCapacitor) return [3, 2];
-                return [4, (0, FileHelper_1.checkIfFileExists)((0, PathHelper_1.getIosPlistPathCapacitor)())];
+                if (!(0, fs_1.existsSync)(isCapacitor ? (0, PathHelper_1.getIosPlistPathCapacitor)() : (0, PathHelper_1.getIosPath)())) {
+                    return [2];
+                }
+                _a.label = 1;
             case 1:
-                _a.sent();
-                return [3, 4];
-            case 2: return [4, (0, FileHelper_1.checkIfFileExists)((0, PathHelper_1.getIosPath)())];
-            case 3:
-                _a.sent();
-                _a.label = 4;
-            case 4:
-                _a.trys.push([4, 9, , 10]);
-                if (!isCapacitor) return [3, 6];
+                _a.trys.push([1, 6, , 7]);
+                if (!isCapacitor) return [3, 3];
                 return [4, (0, Ios_1.modifyPListFile)((0, PathHelper_1.getIosPlistPathCapacitor)(), undefined, true)];
-            case 5:
+            case 2:
                 _a.sent();
-                return [3, 8];
-            case 6: return [4, (0, Ios_1.modifyPListFile)(undefined, undefined, true)];
-            case 7:
+                return [3, 5];
+            case 3: return [4, (0, Ios_1.modifyPListFile)(undefined, undefined, true)];
+            case 4:
                 _a.sent();
-                _a.label = 8;
-            case 8: return [3, 10];
-            case 9:
-                e_4 = _a.sent();
+                _a.label = 5;
+            case 5: return [3, 7];
+            case 6:
+                e_2 = _a.sent();
                 Logger_1.Logger.getInstance().logError("Removal of PList modification didn't work!");
-                return [3, 10];
-            case 10: return [3, 12];
-            case 11:
-                e_5 = _a.sent();
-                return [3, 12];
-            case 12: return [2];
+                return [3, 7];
+            case 7: return [3, 9];
+            case 8:
+                e_3 = _a.sent();
+                return [3, 9];
+            case 9: return [2];
         }
     });
 }); };
 exports.removePListModification = removePListModification;
-var modifyConfigXmlInstall = function () {
-    try {
-        var ConfigParser_1 = require('cordova-common').ConfigParser;
-        var cfg = new ConfigParser_1((0, path_1.join)((0, PathHelper_1.getApplicationPath)(), 'config.xml'));
-        var plugin = cfg.getPlugin('dynatrace-cordova-plugin');
-        if (plugin === undefined) {
-            return;
-        }
-        var pluginWithAt = cfg.getPlugin(DYNATRACE_PLUGIN);
-        if (pluginWithAt === undefined) {
-            cfg.addPlugin({ name: DYNATRACE_PLUGIN, spec: plugin.spec });
-        }
-        cfg.removePlugin(OLD_DYNATRACE_PLUGIN);
-        cfg.write();
-    }
-    catch (e) {
-        Logger_1.Logger.getInstance().logWarning('Config.xml is not available - Can not modify Dynatrace dependency');
-    }
-};
-exports.modifyConfigXmlInstall = modifyConfigXmlInstall;
-var modifyConfigXmlUninstall = function () {
-    try {
-        var cfg = new ConfigParser((0, path_1.join)((0, PathHelper_1.getApplicationPath)(), 'config.xml'));
-        cfg.removePlugin(DYNATRACE_PLUGIN);
-        cfg.write();
-    }
-    catch (e) {
-        Logger_1.Logger.getInstance().logWarning('Config.xml is not available - Can not modify Dynatrace dependency');
-    }
-};
-exports.modifyConfigXmlUninstall = modifyConfigXmlUninstall;
 var isCapVersionThreeOneOrHigher = function (packageJson) {
-    var version = packageJson["version"];
-    return Number(version.substring(0, version.lastIndexOf("."))) >= 3.1;
+    var version = packageJson.version;
+    return Number(version.substring(0, version.lastIndexOf('.'))) >= 3.1;
 };
 exports.isCapVersionThreeOneOrHigher = isCapVersionThreeOneOrHigher;
 var addScriptHook = function (packageJsonParsed, hook, value) {
@@ -271,13 +191,12 @@ var removeScriptHookAndDeps = function (packageJsonParsed) {
             delete packageJsonParsed.scripts[exports.IONIC_HOOK];
             delete packageJsonParsed.scripts[exports.CAP_HOOK];
         }
-        delete packageJsonParsed.scripts[DOCTOR_SCRIPT];
     }
     return packageJsonParsed;
 };
 exports.removeScriptHookAndDeps = removeScriptHookAndDeps;
 var parsedPackageJson = function (path) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, _b, e_6;
+    var _a, _b, e_4;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -286,8 +205,8 @@ var parsedPackageJson = function (path) { return __awaiter(void 0, void 0, void 
                 return [4, (0, FileHelper_1.readTextFromFile)(path)];
             case 1: return [2, _b.apply(_a, [_c.sent()])];
             case 2:
-                e_6 = _c.sent();
-                Logger_1.Logger.getInstance().logWarning('Error in parsedPackageJson => \n' + e_6 + '\nCould not find package.json!');
+                e_4 = _c.sent();
+                Logger_1.Logger.getInstance().logWarning('Error in parsedPackageJson => \n' + e_4 + '\nUnable to find package.json!');
                 return [3, 3];
             case 3: return [2];
         }
@@ -305,3 +224,16 @@ var parsedCapPackageJson = function () { return __awaiter(void 0, void 0, void 0
     return [2, parsedPackageJson((0, PathHelper_1.getCapCliPackage)())];
 }); }); };
 exports.parsedCapPackageJson = parsedCapPackageJson;
+var parsedNpmConfig = function () {
+    try {
+        return JSON.parse((0, child_process_1.execSync)('npm config list --json').toString());
+    }
+    catch (e) {
+        Logger_1.Logger.getInstance().logWarning('Error in parsedNpmConfig => \n' + e + '\nUnable to retrieve npm config list!');
+    }
+};
+exports.parsedNpmConfig = parsedNpmConfig;
+var isOptOut = function (parsedNpmConfig) {
+    return parsedNpmConfig !== undefined && parsedNpmConfig[NPM_CONFIG_OPT_OUT] !== undefined ? parsedNpmConfig[NPM_CONFIG_OPT_OUT] : false;
+};
+exports.isOptOut = isOptOut;

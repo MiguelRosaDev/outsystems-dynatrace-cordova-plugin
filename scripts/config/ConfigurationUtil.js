@@ -37,33 +37,26 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkConfiguration = void 0;
+var fs_1 = require("fs");
 var FileHelper_1 = require("../helpers/FileHelper");
 var Logger_1 = require("../logger/Logger");
 var PathHelper_1 = require("../helpers/PathHelper");
 var checkConfiguration = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var pathToDynatraceConfig, e_1, defaultConfigContent;
+    var pathToDynatraceConfig, defaultConfigContent;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 pathToDynatraceConfig = (0, PathHelper_1.getConfigFilePath)();
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 6]);
-                return [4, (0, FileHelper_1.checkIfFileExists)(pathToDynatraceConfig)];
-            case 2:
-                _a.sent();
-                return [3, 6];
-            case 3:
-                e_1 = _a.sent();
+                if (!!(0, fs_1.existsSync)(pathToDynatraceConfig)) return [3, 3];
                 return [4, (0, FileHelper_1.readTextFromFile)((0, PathHelper_1.getDefaultConfig)())];
-            case 4:
+            case 1:
                 defaultConfigContent = _a.sent();
                 return [4, (0, FileHelper_1.writeTextToFile)(pathToDynatraceConfig, defaultConfigContent)];
-            case 5:
+            case 2:
                 _a.sent();
                 Logger_1.Logger.getInstance().logInfo('Created dynatrace.config.js - Please insert your configuration and update the file!');
-                return [3, 6];
-            case 6: return [2];
+                _a.label = 3;
+            case 3: return [2];
         }
     });
 }); };

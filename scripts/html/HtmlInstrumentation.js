@@ -41,43 +41,61 @@ var Logger_1 = require("../logger/Logger");
 var HtmlModifier_1 = require("./HtmlModifier");
 var HtmlUtil_1 = require("./HtmlUtil");
 var HTMLInstrumentation = (function () {
-    function HTMLInstrumentation(folder, jsAgentContent, cookieProxyEnabled) {
+    function HTMLInstrumentation(folder, jsAgentContent, cookieProxySource, htmlPathsConfigured) {
         this.folder = folder;
         this.jsAgentContent = jsAgentContent;
-        this.cookieProxyEnabled = cookieProxyEnabled;
+        this.cookieProxySource = cookieProxySource;
+        this.htmlPathsConfigured = htmlPathsConfigured;
     }
     HTMLInstrumentation.prototype.instrument = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var htmlFiles, _i, htmlFiles_1, htmlFile, htmlModifier;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var htmlFiles, _a, _b, instrumentationLogMessage, _i, htmlFiles_1, htmlFile, htmlModifier;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4, (0, HtmlUtil_1.searchHTMLFiles)(this.folder)];
                     case 1:
-                        htmlFiles = _a.sent();
-                        if (!(htmlFiles.length === 0)) return [3, 2];
-                        Logger_1.Logger.getInstance().logInfo('No HTML files to instrument!');
-                        return [3, 7];
+                        htmlFiles = _c.sent();
+                        _b = (_a = htmlFiles).concat;
+                        return [4, (0, HtmlUtil_1.checkHTMLPaths)(this.folder, this.htmlPathsConfigured)];
                     case 2:
-                        _i = 0, htmlFiles_1 = htmlFiles;
-                        _a.label = 3;
+                        htmlFiles = _b.apply(_a, [_c.sent()]);
+                        if (!(htmlFiles.length === 0)) return [3, 3];
+                        Logger_1.Logger.getInstance().logInfo('No HTML files to instrument!');
+                        return [3, 8];
                     case 3:
-                        if (!(_i < htmlFiles_1.length)) return [3, 6];
+                        instrumentationLogMessage = '\n\nSuccessfully added JSAgent ';
+                        if (this.cookieProxySource !== undefined) {
+                            if (this.cookieProxySource.includes('-cap.js')) {
+                                instrumentationLogMessage = instrumentationLogMessage + 'and Capacitor Cookie Proxy to HTML file(s):';
+                            }
+                            else {
+                                instrumentationLogMessage = instrumentationLogMessage + 'and Cookie Proxy to HTML file(s):';
+                            }
+                        }
+                        else {
+                            instrumentationLogMessage = instrumentationLogMessage + 'to HTML file(s):';
+                        }
+                        _i = 0, htmlFiles_1 = htmlFiles;
+                        _c.label = 4;
+                    case 4:
+                        if (!(_i < htmlFiles_1.length)) return [3, 7];
                         htmlFile = htmlFiles_1[_i];
                         htmlModifier = new HtmlModifier_1.HTMLModifier(htmlFile);
                         htmlModifier.setJSAgentContent(this.jsAgentContent);
                         htmlModifier.setSwallowAPIEnabled(true);
-                        htmlModifier.setCookieProxyEnabled(this.cookieProxyEnabled);
+                        htmlModifier.setCookieProxySource(this.cookieProxySource);
                         return [4, htmlModifier.modify()];
-                    case 4:
-                        _a.sent();
-                        _a.label = 5;
                     case 5:
-                        _i++;
-                        return [3, 3];
+                        _c.sent();
+                        instrumentationLogMessage = instrumentationLogMessage + "\n\t".concat(htmlFile.getPath());
+                        _c.label = 6;
                     case 6:
-                        Logger_1.Logger.getInstance().logInfo('Successfully updated the JSAgent in HTML file!');
-                        _a.label = 7;
-                    case 7: return [2];
+                        _i++;
+                        return [3, 4];
+                    case 7:
+                        Logger_1.Logger.getInstance().logInfo(instrumentationLogMessage + '\n');
+                        _c.label = 8;
+                    case 8: return [2, htmlFiles];
                 }
             });
         });

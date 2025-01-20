@@ -41,15 +41,19 @@ var FileHelper_1 = require("../helpers/FileHelper");
 var Logger_1 = require("../logger/Logger");
 var LogLevel_1 = require("../logger/LogLevel");
 var HTMLFile = (function () {
-    function HTMLFile(path, dom) {
+    function HTMLFile(path, dom, htmlAsString) {
         this.path = path;
         this.dom = dom;
+        this.htmlAsString = htmlAsString;
     }
     HTMLFile.prototype.getDOM = function () {
         return this.dom;
     };
     HTMLFile.prototype.getPath = function () {
         return this.path;
+    };
+    HTMLFile.prototype.getHtmlString = function () {
+        return this.htmlAsString;
     };
     HTMLFile.prototype.write = function () {
         return __awaiter(this, void 0, void 0, function () {

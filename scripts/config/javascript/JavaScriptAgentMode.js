@@ -9,7 +9,7 @@ var JavaScriptAgentMode;
     JavaScriptAgentMode[JavaScriptAgentMode["AsyncCs"] = 3] = "AsyncCs";
     JavaScriptAgentMode[JavaScriptAgentMode["JsTag"] = 4] = "JsTag";
 })(JavaScriptAgentMode = exports.JavaScriptAgentMode || (exports.JavaScriptAgentMode = {}));
-exports.DEFAULT_JAVASCRIPT_AGENT_MODE = JavaScriptAgentMode.SyncCs;
+exports.DEFAULT_JAVASCRIPT_AGENT_MODE = JavaScriptAgentMode.JsTagComplete;
 exports.JAVA_SCRIPT_AGENT_MODE_NAMES = ['jsInlineScript', 'jsTagComplete', 'syncCS', 'asyncCS', 'jsTag'];
 var parseNumberToMode = function (mode) {
     switch (mode) {

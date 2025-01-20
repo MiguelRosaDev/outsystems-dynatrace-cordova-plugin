@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DoctorAnalyzer = void 0;
+var fs_1 = require("fs");
 var Logger_1 = require("../logger/Logger");
 var FileHelper_1 = require("../helpers/FileHelper");
 var PathHelper_1 = require("../helpers/PathHelper");
@@ -52,7 +53,7 @@ var DoctorAnalyzer = (function () {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 2, , 3]);
-                        if (!(0, FileHelper_1.checkIfFileExistsSync)((0, PathHelper_1.getLogPath)())) {
+                        if (!(0, fs_1.existsSync)((0, PathHelper_1.getLogPath)())) {
                             (0, FileHelper_1.createDirectorySync)((0, PathHelper_1.getLogPath)());
                         }
                         _a = FileHelper_1.writeTextToFileSync;
@@ -179,8 +180,13 @@ var DoctorAnalyzer = (function () {
                         if (this.doctor.isMobileFirstAvailable() && !this.doctor.isMobileFirstProperVersion()) {
                             stringBuilder += DoctorConstants_1.MFP_VERSION_NOT_SUPPORTED;
                         }
-                        if (this.doctor.isAndroidAvailable() && !this.doctor.isGradleProperVersion()) {
-                            stringBuilder += DoctorConstants_1.GRADLE_VERSION_NOT_SUPPORTED;
+                        if (this.doctor.isAndroidAvailable()) {
+                            if ((0, FileHelper_1.getGradleVersionFileAsString)() === undefined) {
+                                stringBuilder += DoctorConstants_1.GRADLE_VERSION_NOT_FOUND;
+                            }
+                            else if (!this.doctor.isGradleProperVersion()) {
+                                stringBuilder += DoctorConstants_1.GRADLE_VERSION_NOT_SUPPORTED;
+                            }
                         }
                         if (stringBuilder.length === 0) {
                             stringBuilder += DoctorConstants_1.NO_PROBLEMS;

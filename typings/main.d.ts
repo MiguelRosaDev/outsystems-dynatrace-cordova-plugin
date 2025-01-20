@@ -29,7 +29,7 @@ interface MobileFirstNetworkInterceptor {
     /**
      * Disables the interceptor again
      */
-    disableInterceptor();
+    disableInterceptor(): void;
 }
 
 interface NativeNetworkInterceptorUtils {
@@ -87,7 +87,7 @@ interface DynatraceMobile {
     * @param error callback used when the endSession is not successful 
     * @returns Status from if the endVisit call was successful or not
     */
-    endVisit(success: any, error: any);
+    endVisit(success: any, error: any): void;
 
     /**
      * Returns an interceptor which helps you to monitor requests to the Mobile First environment. They are wrapped
@@ -108,7 +108,7 @@ interface DynatraceMobile {
      * @param error callback used when retrieving UserPrivacyOptions is not successful 
      * @returns Current user privacy options for the mobile session
      */
-    getUserPrivacyOptions(success: (userPrivacyOptions: UserPrivacyOptions) => any, error: any);
+    getUserPrivacyOptions(success: (userPrivacyOptions: UserPrivacyOptions) => any, error: any): void;
 
     /**
      * Set the data collection level (Off, Performance, UserBehavior)
@@ -119,7 +119,7 @@ interface DynatraceMobile {
      * @param error callback used when applying UserPrivacyOptions is not successful 
      * @returns true is applying the UserPrivacyOptions was successful and false if not
      */
-    applyUserPrivacyOptions(dataCollectionLevel: DataCollectionLevel, crashReportingOptedIn: boolean, success: any, error: any);
+    applyUserPrivacyOptions(dataCollectionLevel: DataCollectionLevel, crashReportingOptedIn: boolean, success: any, error: any): void;
 }
 
 interface UserPrivacyOptions {

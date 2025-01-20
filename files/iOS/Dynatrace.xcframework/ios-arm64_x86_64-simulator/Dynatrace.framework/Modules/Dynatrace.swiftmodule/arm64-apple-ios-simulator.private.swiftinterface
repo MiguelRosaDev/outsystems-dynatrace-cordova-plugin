@@ -1,9 +1,42 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.7.1 (swiftlang-5.7.1.135.3 clang-1400.0.29.51)
-// swift-module-flags: -target arm64-apple-ios11.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name Dynatrace
+// swift-compiler-version: Apple Swift version 5.9 (swiftlang-5.9.0.128.108 clang-1500.0.40.1)
+// swift-module-flags: -target arm64-apple-ios12.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name Dynatrace
 // swift-module-flags-ignorable: -enable-bare-slash-regex
 @_exported import Dynatrace
-import Foundation
 import Swift
+import SwiftUI
 import _Concurrency
 import _StringProcessing
+import _SwiftConcurrencyShims
+@available(iOS 13.0, *)
+extension SwiftUI.View {
+  @available(*, deprecated, message: "Use withCustomInstrumentationConfig(.skipInstrumentation) instead")
+  public func skippingInstrumentation() -> some SwiftUI.View
+  
+  @available(*, deprecated, message: "Use withCustomInstrumentationConfig(.useDefaultControlName) instead")
+  public func withDefaultControlName() -> some SwiftUI.View
+  
+  public func withCustomInstrumentationConfig(_ params: SwiftUIInstrumentationConfigParam...) -> some SwiftUI.View
+  
+}
+@available(iOS 13.0, *)
+public enum SwiftUIInstrumentationConfigParam {
+  case skipInstrumentation, useDefaultControlName, doNotReportStateVariable
+  public static func == (a: SwiftUIInstrumentationConfigParam, b: SwiftUIInstrumentationConfigParam) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(iOS 13.0, *)
+public struct instrument<Content> : Swift.Sendable, SwiftUI.View where Content : SwiftUI.View {
+  public init(with values: [Swift.String : Swift.String], viewName: Swift.String, createAction: Swift.Bool = true, @SwiftUI.ViewBuilder _ content: @escaping () -> Content)
+  @_Concurrency.MainActor(unsafe) public var body: some SwiftUI.View {
+    get
+  }
+  public typealias Body = @_opaqueReturnTypeOf("$s9Dynatrace10instrumentV4bodyQrvp", 0) __<Content>
+}
+@available(iOS 13.0, *)
+extension SwiftUIInstrumentationConfigParam : Swift.Equatable {}
+@available(iOS 13.0, *)
+extension SwiftUIInstrumentationConfigParam : Swift.Hashable {}
